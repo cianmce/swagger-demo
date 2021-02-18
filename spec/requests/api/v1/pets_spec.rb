@@ -1,98 +1,60 @@
 require 'swagger_helper'
 
-RSpec.describe 'api/v1/pets', type: :request do
+describe 'Blogs API' do
 
-  path '/api/v1/pets' do
+  path '/blogs' do
 
-    get('list pets') do
-      response(200, 'successful') do
+    post 'Creates a blog' do
+      tags 'Blogs'
+      consumes 'application/json'
+      parameter name: :blog, in: :body, schema: {
+        type: :object,
+        properties: {
+          title: { type: :string },
+          content: { type: :string }
+        },
+        required: [ 'title', 'content' ]
+      }
 
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
+      response '201', 'blog created' do
+        let(:blog) { { title: 'foo', content: 'bar' } }
         run_test!
       end
-    end
 
-    post('create pet') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
+      response '422', 'invalid request' do
+        let(:blog) { { title: 'foo' } }
         run_test!
       end
     end
   end
 
-  path '/api/v1/pets/{id}' do
-    # You'll want to customize the parameter types...
-    parameter name: 'id', in: :path, type: :string, description: 'id'
+  path '/blogs/{id}' do
 
-    get('show pet') do
-      response(200, 'successful') do
-        let(:id) { '123' }
+    get 'Retrieves a blog' do
+      tags 'Blogs'
+      produces 'application/json', 'application/xml'
+      parameter name: :id, in: :path, type: :string
 
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
+      response '200', 'blog found' do
+        schema type: :object,
+          properties: {
+            id: { type: :integer },
+            title: { type: :string },
+            content: { type: :string }
+          },
+          required: [ 'id', 'title', 'content' ]
+
+        let(:id) { Blog.create(title: 'foo', content: 'bar').id }
         run_test!
       end
-    end
 
-    patch('update pet') do
-      response(200, 'successful') do
-        let(:id) { '123' }
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
+      response '404', 'blog not found' do
+        let(:id) { 'invalid' }
         run_test!
       end
-    end
 
-    put('update pet') do
-      response(200, 'successful') do
-        let(:id) { '123' }
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-
-    delete('delete pet') do
-      response(200, 'successful') do
-        let(:id) { '123' }
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
+      response '406', 'unsupported accept header' do
+        let(:'Accept') { 'application/foo' }
         run_test!
       end
     end
