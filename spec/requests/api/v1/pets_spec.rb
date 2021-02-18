@@ -1,60 +1,57 @@
 require 'swagger_helper'
 
-describe 'Blogs API' do
+describe 'Pets API' do
 
-  path '/blogs' do
+  path '/api/v1/pets' do
 
-    post 'Creates a blog' do
-      tags 'Blogs'
-      consumes 'application/json'
-      parameter name: :blog, in: :body, schema: {
+    post 'Creates a pet' do
+      tags 'Pets'
+      consumes 'application/json', 'application/xml'
+      parameter name: :pet, in: :body, schema: {
         type: :object,
         properties: {
-          title: { type: :string },
-          content: { type: :string }
+          name: { type: :string },
+          photo_url: { type: :string },
+          status: { type: :string }
         },
-        required: [ 'title', 'content' ]
+        required: [ 'name', 'status' ]
       }
 
-      response '201', 'blog created' do
-        let(:blog) { { title: 'foo', content: 'bar' } }
+      response '201', 'pet created' do
+        let(:pet) { { name: 'Dodo', status: 'available' } }
         run_test!
       end
 
       response '422', 'invalid request' do
-        let(:blog) { { title: 'foo' } }
+        let(:pet) { { name: 'foo' } }
         run_test!
       end
     end
   end
 
-  path '/blogs/{id}' do
+  path '/api/v1/pets/{id}' do
 
-    get 'Retrieves a blog' do
-      tags 'Blogs'
+    get 'Retrieves a pet' do
+      tags 'Pets'
       produces 'application/json', 'application/xml'
-      parameter name: :id, in: :path, type: :string
+      parameter name: :id, :in => :path, :type => :string
 
-      response '200', 'blog found' do
+      response '200', 'name found' do
         schema type: :object,
           properties: {
-            id: { type: :integer },
-            title: { type: :string },
-            content: { type: :string }
+            id: { type: :integer, },
+            name: { type: :string },
+            photo_url: { type: :string },
+            status: { type: :string }
           },
-          required: [ 'id', 'title', 'content' ]
+          required: [ 'id', 'name', 'status' ]
 
-        let(:id) { Blog.create(title: 'foo', content: 'bar').id }
+        let(:id) { Pet.create(name: 'foo', status: 'bar', photo_url: 'http://example.com/avatar.jpg').id }
         run_test!
       end
 
-      response '404', 'blog not found' do
+      response '404', 'pet not found' do
         let(:id) { 'invalid' }
-        run_test!
-      end
-
-      response '406', 'unsupported accept header' do
-        let(:'Accept') { 'application/foo' }
         run_test!
       end
     end
