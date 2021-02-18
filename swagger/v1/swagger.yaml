@@ -93,7 +93,7 @@ paths:
         '404':
           description: pet not found
 servers:
-- url: http://{defaultHost}
+- url: http://{stack}
   variables:
-    defaultHost:
+    stack:
       default: localhost:3000
